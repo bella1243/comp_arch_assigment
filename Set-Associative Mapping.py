@@ -1,28 +1,29 @@
 import random
 
-
-class Cache:
-    def __init__(self, size):
-        self.size = size
-        self.cache = [None] * size
+class SetAssociativeCache:
+    def __init__(self, num_sets, set_size):
+        self.num_sets = num_sets
+        self.set_size = set_size
+        self.cache = [[None] * set_size for _ in range(num_sets)]
 
     def visualize_cache(self):
         print("Cache Content:")
-        for i, block in enumerate(self.cache):
-            print(f"Set {i}:", block)
+        for i, cache_set in enumerate(self.cache):
+            print(f"Set {i}:", cache_set)
         print()
 
     def is_hit(self, word):
-        for block in self.cache:
-            if block and word in block:
+        for cache_set in self.cache:
+            if cache_set and word in cache_set:
                 return True
         return False
 
     def replace_block(self, word):
-        # In this simple example, we use a random replacement strategy
-        index = random.randint(0, self.size - 1)
-        self.cache[index] = [f"Block {index} Word {i}" for i in range(4)]  # Simulating a block of words
-        print(f"Cache block {index} replaced.")
+        # In this simple example, we use a random replacement strategy within the selected set
+        set_index = random.randint(0, self.num_sets - 1)
+        block_index = random.randint(0, self.set_size - 1)
+        self.cache[set_index][block_index] = [f"Block {set_index}-{block_index} Word {i}" for i in range(4)]
+        print(f"Cache set {set_index} block {block_index} replaced.")
 
     def fetch_word(self, word):
         if self.is_hit(word):
@@ -34,18 +35,17 @@ class Cache:
         self.visualize_cache()
         print(f"Delivering word {word} to the processor register.\n")
 
-
 def main():
-    cache_size = 2  # Change this to adjust the cache size
+    num_sets = 2  # Change this to adjust the number of sets
+    set_size = 2  # Change this to adjust the set size
     main_memory = [[f"Main Memory Block {i} Word {j}" for j in range(4)] for i in range(6)]
 
-    cache = Cache(cache_size)
+    cache = SetAssociativeCache(num_sets, set_size)
 
     for _ in range(5):  # Number of random word requests
         requested_word = random.choice(random.choice(main_memory))
         print(f"Processor requests word: {requested_word}")
         cache.fetch_word(requested_word)
-
 
 if __name__ == "__main__":
     main()
