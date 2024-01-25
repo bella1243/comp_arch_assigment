@@ -1,51 +1,55 @@
 import random
 
-
 class Cache:
-    def __init__(self, size):
+    def __init__(self, size, block_size):
         self.size = size
+        self.block_size = block_size
         self.cache = [None] * size
 
     def visualize_cache(self):
         print("Cache Content:")
         for i, block in enumerate(self.cache):
-            print(f"Set {i}:", block)
+            print(f"Block {i}: {block}")
         print()
 
-    def is_hit(self, word):
-        for block in self.cache:
-            if block and word in block:
-                return True
-        return False
+    def generate_memory(self, memory_size):
+        return [random.randint(0, 100) for _ in range(memory_size)]
 
-    def replace_block(self, word):
-        # In this simple example, we use a random replacement strategy
-        index = random.randint(0, self.size - 1)
-        self.cache[index] = [f"Block {index} Word {i}" for i in range(4)]  # Simulating a block of words
-        print(f"Cache block {index} replaced.")
+    def access_memory(self, address):
+        block_index = address // self.block_size
+        block_offset = address % self.block_size
 
-    def fetch_word(self, word):
-        if self.is_hit(word):
-            print(f"Cache hit! Word {word} is in the cache.")
+        if self.cache[block_index] is not None:
+            print(f"Cache Hit! Block {block_index} is already in the cache.")
+            data = self.cache[block_index][block_offset]
         else:
-            print(f"Cache miss! Fetching block containing word {word} from main memory.")
-            self.replace_block(word)
+            print(f"Cache Miss! Loading Block {block_index} into the cache.")
+            self.cache[block_index] = self.memory[block_index * self.block_size: (block_index + 1) * self.block_size]
+            data = self.cache[block_index][block_offset]
 
-        self.visualize_cache()
-        print(f"Delivering word {word} to the processor register.\n")
+        return data
 
-
-def main():
-    cache_size = 2  # Change this to adjust the cache size
-    main_memory = [[f"Main Memory Block {i} Word {j}" for j in range(4)] for i in range(6)]
-
-    cache = Cache(cache_size)
-
-    for _ in range(5):  # Number of random word requests
-        requested_word = random.choice(random.choice(main_memory))
-        print(f"Processor requests word: {requested_word}")
-        cache.fetch_word(requested_word)
-
+    def fetch_word(self, processor_address):
+        word = self.access_memory(processor_address)
+        print(f"Processor Register: {word}\n")
 
 if __name__ == "__main__":
-    main()
+    cache_size = 4
+    block_size = 4
+    memory_size = 16
+
+    cache = Cache(cache_size, block_size)
+    cache.memory = cache.generate_memory(memory_size)
+
+    # Example Accesses
+    cache.fetch_word(5)
+    cache.visualize_cache()
+
+    cache.fetch_word(8)
+    cache.visualize_cache()
+
+    cache.fetch_word(2)
+    cache.visualize_cache()
+
+    cache.fetch_word(12)
+    cache.visualize_cache()
